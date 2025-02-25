@@ -6,7 +6,7 @@ const { remote } = require('webdriverio');
 //     console.log(driver); // Debugging: Check if driver is not null
 
     // if (!driver) {
-    //     throw new Error("Webdriver session is not initialized. Check your configuration.");
+    //     throw new Error("Webdriver on is not initialized. Check your configuration.");
     // }
 
 //     const startButton = await driver.$('//android.widget.TextView[@text="Let\'s get Started"]');
@@ -78,11 +78,50 @@ Then(/^the user enters the OTP$/, async () => {
         await enterOtp1.setValue("2");
         await enterOtp2.setValue("2");
         await enterOtp3.setValue("1");
-        console.log("Mobile number entered successfully!");
+        console.log("OTP entered successfully!");
     } else {
-        console.log("Mobile number field not found!");
+        console.log("OTP field not found!");
     }
 
-    await driver.pause(3000); // Pause to observe the result
+    await driver.pause(5000); // Pause to observe the result
 });
+When(/^the user allows permissions for make calls$/, async () => {
+    console.log("Checking for permission popup...");
+
+    // Locate the permission popup dialog
+    const permissionPopup = await driver.$('id=com.android.permissioncontroller:id/grant_dialog');
+
+    // Check if the permission popup is displayed
+    if (await permissionPopup.isDisplayed()) {
+        console.log("Permission popup found!");
+
+        // Locate the 'Allow' button for permissions
+        const allowButton = await driver.$('id=com.android.permissioncontroller:id/permission_allow_button');
+
+        // Check if the Allow button exists and click it
+        if (await allowButton.isDisplayed()) {
+            await allowButton.click();
+            console.log("Clicked on Allow Button");
+        } else {
+            console.log("Permission Allow button not found");
+        }
+    } else {
+        console.log("Permission popup not found");
+    }
+
+    await driver.pause(2000); // Small delay after clicking
+});
+When(/^the user allows Battery permission$/, async () => {
+    const allowButton = await driver.$('id=android:id/button1');
+
+    // Check if the 'Allow' button is displayed and click it
+    if (await allowButton.isDisplayed()) {
+        await allowButton.click();
+        console.log("Clicked on Allow Button");
+    } else {
+        console.log("Permission Allow button not found");
+    }
+    await driver.pause(2000); // Pause to observe the result
+});
+
 
