@@ -7,7 +7,7 @@ exports.config = {
         {
             platformName: "Android",
             "appium:deviceName": "emulator-5554",
-            "appium:platformVersion": "14",
+            "appium:platformVersion": "15",
             "appium:appPackage": "com.vahan.hotline",
             "appium:appActivity": "com.vahan.hotline.v2.ui.activities.HomeActivity",
             "appium:automationName": "UiAutomator2",
