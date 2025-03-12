@@ -151,14 +151,29 @@ When(/^Capturing the first lead name$/, async () => {
     try {
         const leadNumberElement = await driver.$("id=com.vahan.hotline:id/tvLeadNumber");
         const leadNumberText = await leadNumberElement.getText();
-        previousLeadNumber = leadNumberText.match(/\d+/)?.[0] || leadNumberText; // Extract only digits or store full text
-        console.log("First place number:", previousLeadNumber);
+        global.previousLeadNumber = leadNumberText.match(/\d+/)?.[0] || leadNumberText; // Store extracted number globally
+        console.log("📌 First captured lead number:", global.previousLeadNumber);
     } catch (error) {
-        console.error("Error fetching number:", error);
+        console.error("❌ Error fetching number:", error);
     } 
-    await driver.pause(10000);
+    await driver.pause(3000);
 });
-  Then(/^User checks if the previous calls pop-up appears$/, async () => {
+Then(/^the user clicks on Start Auto Dialing if leads exist$/, async () => {
+    const pendingCount= await $('android=new UiSelector().resourceId("com.vahan.hotline:id/tvTabCount")');
+    const pendingCountText = await pendingCount.getText();
+    const pendingLeads = parseInt(pendingCountText);
+
+    if (pendingLeads > 0) {
+        const startDialingButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnAutoDial")');
+        await expect(startDialingButton).toBeDisplayed();
+        await startDialingButton.click();
+        console.log("Start Auto Dialing clicked!");
+    } else {
+        console.log('No leads available for auto dialing.');
+    }
+    await driver.pause(3000);
+});   
+Then(/^User checks if the previous calls pop-up appears$/, async () => {
     try {
         console.log("Checking if the popup appears...");
 
@@ -181,23 +196,8 @@ When(/^Capturing the first lead name$/, async () => {
     } catch (error) {
         console.error("Error occurred:", error);
     } 
-    await driver.pause(5000);
-});
-Then(/^the user clicks on Start Auto Dialing if leads exist$/, async () => {
-    const pendingCount= await $('android=new UiSelector().resourceId("com.vahan.hotline:id/tvTabCount")');
-    const pendingCountText = await pendingCount.getText();
-    const pendingLeads = parseInt(pendingCountText);
-
-    if (pendingLeads > 0) {
-        const startDialingButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnAutoDial")');
-        await expect(startDialingButton).toBeDisplayed();
-        await startDialingButton.click();
-        console.log("Start Auto Dialing clicked!");
-    } else {
-        console.log('No leads available for auto dialing.');
-    }
     await driver.pause(10000);
-});   
+});
 Then(/^the user ends the call$/, async () => {
     const endCallButton= await $('android=new UiSelector().resourceId("com.google.android.dialer:id/incall_end_call")');
     await endCallButton.click();
@@ -228,34 +228,37 @@ When(/^The user saves the call note$/, async () => {
 });
 Then(/^Verify if the previously stored number is present$/, async () => {
     try {
-        console.log("Checking if the stored lead number is present...");
+        console.log("🔎 Checking if the stored lead number is still present...");
 
-        // Ensure that the main content is displayed
         const mainScreenElement = await driver.$("id=com.vahan.hotline:id/mainContent");
         if (!(await mainScreenElement.isExisting())) {
             console.log("❌ Main content screen is NOT displayed.");
             return;
         }
 
-        // Locate the lead number element again
         const newLeadNumberElement = await driver.$("id=com.vahan.hotline:id/tvLeadNumber");
         const newLeadNumberText = await newLeadNumberElement.getText();
         const currentLeadNumber = newLeadNumberText.match(/\d+/)?.[0] || newLeadNumberText;
 
-        console.log("Stored lead number:", storedLeadNumber);
-        console.log("Current lead number on screen:", currentLeadNumber);
+        console.log("🔹 Previously stored lead number:", global.previousLeadNumber);
+        console.log("🔹 Current lead number on screen:", currentLeadNumber);
 
-        // Compare the numbers
-        if (storedLeadNumber === currentLeadNumber) {
+        if (global.previousLeadNumber === currentLeadNumber) {
             console.log("✅ The stored lead number is still present.");
         } else {
             console.log("❌ The lead number has changed.");
         }
+
+        // ✅ Store the new lead number for next check
+        global.previousLeadNumber = currentLeadNumber;
+        console.log("📌 Updated stored lead number for next check:", global.previousLeadNumber);
+
     } catch (error) {
-        console.error("Error verifying the lead number:", error);
+        console.error("❌ Error verifying the lead number:", error);
     }
     await driver.pause(2000);
 });
+
 Then(/^The user ends the second call$/, async () => {
     const endCall= await $('android=new UiSelector().resourceId("com.google.android.dialer:id/incall_end_call")');
     await endCall.click();
@@ -282,7 +285,7 @@ When(/^The user saves the new call note$/, async () => {
         console.log("Save button not found!");
     }
     // Wait for the action to complete
-    await driver.pause(5000);
+    await driver.pause(3000);
 });
 Then(/^User pauses the Autodialler$/, async () => {
     const pauseButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnAutoDial")');
@@ -293,7 +296,7 @@ Then(/^User pauses the Autodialler$/, async () => {
         console.log("Auto-dialer button not found!");
     }
 // Wait for the action to complete
-    await driver.pause(5000);
+    await driver.pause(3000);
 });
 Then(/^User navigates back to campaigns page$/, async () =>{
     const backButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/ivBack")');
@@ -303,6 +306,7 @@ Then(/^User navigates back to campaigns page$/, async () =>{
     } else {
         console.log("User is not in pending section");
     }
+    await driver.pause(3000);
 });
 Then(/^User navigates back to welcome screen$/, async () =>{
     const backButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/ivBack")');
@@ -312,8 +316,9 @@ Then(/^User navigates back to welcome screen$/, async () =>{
     } else {
         console.log("User is not in Welcome screen of SmartList");
     }
+    await driver.pause(3000);
 });
-Then(/^User navigates back to Home Page$/, async () =>{
+Then(/^User navigates back to campaigns Page$/, async () =>{
     const backButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/ivBack")');
     if (await backButton.isDisplayed()) {
         await backButton.click();
@@ -321,6 +326,141 @@ Then(/^User navigates back to Home Page$/, async () =>{
     } else {
         console.log("User is not in Home Page");
     }
+    await driver.pause(10000);
 });
+Then(/^The user clicks the RNR campaign$/, async () => {
+        // Locate the RNR campaign entry using UiSelector with instance(1)
+        const rnrEntry = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/icForwardArrow").instance(1)');
+
+        // Wait for the element to exist
+        await rnrEntry.waitForExist({ timeout: 5000 });
+
+        // Check if the element is displayed before clicking
+        if (await rnrEntry.isDisplayed()) {
+            console.log("✅ RNR campaign entry is visible. Clicking now...");
+            await rnrEntry.click();
+        } else {
+            console.log("❌ RNR campaign entry is not visible.");
+        }
+    await driver.pause(5000);
+});
+
+Then(/^Click on the dropdown$/, async () => {
+    try {
+        // Locate the dropdown using UiSelector with text "Select a date"
+        const dropdownElement = await driver.$('android=new UiSelector().text("Select a date")');
+
+        // Check if the dropdown is visible before clicking
+        if (await dropdownElement.isDisplayed()) {
+            await dropdownElement.click();
+            console.log("✅ Successfully clicked on the dropdown.");
+        } else {
+            console.log("❌ Dropdown is not visible on the screen.");
+        }
+    } catch (error) {
+        console.error("❌ Error clicking on the dropdown:", error);
+    }
+    await driver.pause(3000);
+});
+
+Then(/^Click on the "Today" button$/, async () => {
+    try {
+        // Locate the button using UiSelector with text "Today"
+        const todayButton = await driver.$('android=new UiSelector().text("Today")');
+
+        // Check if the button is visible before clicking
+        if (await todayButton.isDisplayed()) {
+            await todayButton.click();
+            console.log('✅ Successfully clicked on the "Today" button.');
+        } else {
+            console.log('❌ "Today" button is not visible on the screen.');
+        }
+    } catch (error) {
+        console.error('Error clicking on the "Today" button:', error);
+    }
+    await driver.pause(3000);
+});
+Then(/^Click on the "Let's Start" button$/, async () => {
+        const letsStartButton = await driver.$("id=com.vahan.hotline:id/btnLetsStartDialing");
+
+        // Check if the button is visible before clicking
+        if (await letsStartButton.isDisplayed()) {
+            await letsStartButton.click();
+            console.log('✅ Successfully clicked on the "Let\'s Start" button.');
+        } else {
+            console.log('❌ "Let\'s Start" button is not visible on the screen.');
+        }
+    await driver.pause(3000);
+});
+Then(/^Verify the text "RNR Candidates" on the screen$/, async () => {
+        // Locate the element using its resource ID
+        const campaignTitleElement = await driver.$("id=com.vahan.hotline:id/tvCampaignTypeTitle");
+
+        // Check if the element is displayed
+        if (await campaignTitleElement.isDisplayed()) {
+            // Get the text from the element
+            const campaignText = await campaignTitleElement.getText();
+            console.log('Fetched text:', campaignText);
+
+            // Verify if the text matches "RNR candidates"
+            if (campaignText.trim() === "RNR Candidates") {
+                console.log('✅ Text verification passed: "RNR candidates" is displayed.');
+            } else {
+                console.log(`❌ Text verification failed. Expected: "RNR candidates", Found: "${campaignText}"`);
+            }
+        } else {
+            console.log('❌ The element for "RNR candidates" is not visible on the screen.');
+        }
+    await driver.pause(3000);
+});
+Then(/^Fetch all phone numbers and verify stored number$/, async () => {
+    try {
+        console.log("📌 Fetching all phone numbers from the screen...");
+
+        // Ensure the main content is displayed before proceeding
+        const mainScreenElement = await driver.$("id=com.vahan.hotline:id/mainContent");
+        if (!(await mainScreenElement.isExisting())) {
+            console.log("❌ Main content screen is NOT displayed.");
+            return;
+        }
+
+        // Fetch all TextView elements from the screen
+        const allTextElements = await driver.$$("//android.widget.TextView");
+
+        if (allTextElements.length === 0) {
+            console.log("❌ No text elements found on the screen.");
+            return;
+        }
+
+        // Extract numbers from the text elements
+        const fetchedNumbers = [];
+        for (let element of allTextElements) {
+            const text = await element.getText();
+            const phoneNumber = text.match(/\d{10}/)?.[0]; // Extract 10-digit numbers
+            if (phoneNumber) {
+                fetchedNumbers.push(phoneNumber);
+            }
+        }
+
+        console.log("📜 All phone numbers on the screen:", fetchedNumbers);
+
+        // Compare the stored lead number with the fetched numbers
+        if (fetchedNumbers.includes(global.previousLeadNumber)) {
+            console.log(`✅ The stored lead number ${global.previousLeadNumber} is present on the screen.`);
+        } else {
+            console.log(`❌ The stored lead number ${global.previousLeadNumber} is NOT found on the screen.`);
+        }
+    } catch (error) {
+        console.error("❌ Error fetching phone numbers:", error);
+    }
+    await driver.pause(3000);
+});
+
+
+
+
+
+
+
 
 

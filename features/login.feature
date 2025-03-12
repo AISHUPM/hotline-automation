@@ -12,8 +12,8 @@ Feature: Login functionality
    When User enters First trip Smart List
    Then the user verifies the pending section
    When Capturing the first lead name
-   Then User checks if the previous calls pop-up appears
    Then the user clicks on Start Auto Dialing if leads exist
+   Then User checks if the previous calls pop-up appears
    Then the user ends the call
    When The Call note pop up appears
    When The user saves the call note
@@ -22,6 +22,13 @@ Feature: Login functionality
    When The new Call note pop up appears
    When The user saves the new call note
    Then User pauses the Autodialler
-   # Then User navigates back to campaigns page
-   # Then User navigates back to welcome screen
-   # Then User navigates back to Home Page
+   Then User navigates back to campaigns page
+   Then User navigates back to welcome screen
+   Then User navigates back to campaigns Page
+   # When The user re-navigates to Campaigns
+   Then The user clicks the RNR campaign
+   Then Click on the dropdown
+   Then Click on the "Today" button
+   Then Click on the "Let's Start" button
+   Then Verify the text "RNR Candidates" on the screen
+   Then Fetch all phone numbers and verify stored number
