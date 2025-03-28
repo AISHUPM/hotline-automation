@@ -1,8 +1,11 @@
+const { exec } = require('child_process');
+
 exports.config = {
     runner: 'local',
     specs: ['./features/**/*.feature'],
     exclude: [],
     maxInstances: 1,
+
     capabilities: [
         {
             platformName: "Android",
@@ -18,13 +21,39 @@ exports.config = {
             "appium:autoGrantPermissions": true
         }
     ],
-        logLevel: 'info',
+
+    logLevel: 'info',
     framework: 'cucumber',
     cucumberOpts: {
         require: ['./step-definitions/**/*.js'],
         timeout: 60000
     },
-    reporters: ['dot'],
-    services: [['appium', { command: 'appium' }]],  // ✅ Appium service runs correctly
-};
 
+    reporters: [
+        'spec',
+        ['allure', {
+            outputDir: './allure-results',
+            disableWebdriverStepsReporting: false,
+            disableWebdriverScreenshotsReporting: false
+        }],
+        ['json', {
+            outputDir: './reports/json-results'
+        }]
+    ],
+
+    services: [['appium', { command: 'appium' }]],
+
+    // ✅ Send Slack report automatically after test execution
+    onComplete: async () => {
+        console.log('✅ Test execution completed! Starting server and sending report to Slack...');
+        
+        // Start the server and send the report
+        exec('node slackReportSender.js', (error, stdout, stderr) => {
+            if (error) {
+                console.error(`❌ Error executing Slack report sender: ${error}`);
+                return;
+            }
+            console.log(`✅ Slack report sent successfully:\n${stdout}`);
+        });
+    }
+};
