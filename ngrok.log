@@ -1,0 +1,7 @@
+t=2025-03-28T14:47:43+0530 lvl=info msg="no configuration paths supplied"
+t=2025-03-28T14:47:43+0530 lvl=info msg="using configuration at default config path" path="/Users/aishwarya/Library/Application Support/ngrok/ngrok.yml"
+t=2025-03-28T14:47:43+0530 lvl=info msg="open config file" path="/Users/aishwarya/Library/Application Support/ngrok/ngrok.yml" err=nil
+t=2025-03-28T14:47:43+0530 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2025-03-28T14:47:43+0530 lvl=info msg="client session established" obj=tunnels.session
+t=2025-03-28T14:47:43+0530 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2025-03-28T14:47:43+0530 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:5050 url=https://06f4-157-20-14-34.ngrok-free.app
