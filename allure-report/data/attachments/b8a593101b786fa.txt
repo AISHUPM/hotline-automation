@@ -1,0 +1,4 @@
+{
+  "using": "-android uiautomator",
+  "value": "new UiSelector().resourceId(\"com.vahan.hotline:id/chip_not_connected_not_received\")"
+}

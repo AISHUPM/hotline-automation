@@ -3,7 +3,6 @@ const { exec } = require('child_process');
 exports.config = {
     runner: 'local',
     specs: ['./features/**/*.feature'],
-    exclude: [],
     maxInstances: 1,
 
     capabilities: [
@@ -35,25 +34,35 @@ exports.config = {
             outputDir: './allure-results',
             disableWebdriverStepsReporting: false,
             disableWebdriverScreenshotsReporting: false
-        }],
-        ['json', {
-            outputDir: './reports/json-results'
         }]
     ],
 
     services: [['appium', { command: 'appium' }]],
 
-    // ✅ Send Slack report automatically after test execution
+    // ✅ Automatically generate Allure report and send it to Slack
     onComplete: async () => {
-        console.log('✅ Test execution completed! Starting server and sending report to Slack...');
+        console.log('✅ Test execution completed! Generating Allure report...');
         
-        // Start the server and send the report
-        exec('node slackReportSender.js', (error, stdout, stderr) => {
+        // Generate the Allure report after the test execution
+        exec('npx allure generate ./allure-results --clean -o ./allure-report', (error, stdout, stderr) => {
             if (error) {
-                console.error(`❌ Error executing Slack report sender: ${error}`);
+                console.error(`❌ Error generating Allure report: ${error}`);
                 return;
             }
-            console.log(`✅ Slack report sent successfully:\n${stdout}`);
+            console.log(`✅ Allure report generated successfully:\n${stdout}`);
+            
+            // Make sure the Allure report is successfully generated before sending the Slack message
+            console.log('🔄 Sending the report to Slack...');
+            // Wait for a few seconds to ensure the report is fully generated
+            setTimeout(() => {
+                exec('node slackReportSender.js', (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`❌ Error executing Slack report sender: ${error}`);
+                        return;
+                    }
+                    console.log(`✅ Slack report sent successfully:\n${stdout}`);
+                });
+            }, 5000);  // Delay for 5 seconds before sending to Slack
         });
     }
 };
