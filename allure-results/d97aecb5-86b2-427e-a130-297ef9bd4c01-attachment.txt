@@ -1,4 +1,0 @@
-{
-  "using": "-android uiautomator",
-  "value": "new UiSelector().resourceId(\"com.google.android.dialer:id/incall_end_call\")"
-}
