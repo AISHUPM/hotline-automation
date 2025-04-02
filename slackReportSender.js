@@ -1,7 +1,10 @@
 const axios = require('axios');
 const fs = require('fs');
 const { exec, execSync } = require('child_process');
-
+if (fs.existsSync("/Users/aishwarya/Desktop/Hotline-automation/allure-results")) {
+    fs.rmSync("/Users/aishwarya/Desktop/Hotline-automation/allure-results", { recursive: true, force: true });
+    console.log('🗑️ Old Allure results cleared.');
+}
 const SLACK_TOKEN = 'xoxb-11878976806-8655806195476-aUUHJHsbneAhrwm6q61Rt3E8';  // Slack bot token
 const CHANNEL_ID = 'C06Q9GD0728';  // Slack channel ID
 const REPORT_URL = 'http://127.0.0.1:5050';  // Updated to local server

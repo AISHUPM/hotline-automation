@@ -1,4 +1,0 @@
-{
-  "using": "class name",
-  "value": "android.widget.FrameLayout[id=\"com.vahan.hotline:id/afterCallNoteCardView\"]"
-}
