@@ -10,7 +10,7 @@ Given(/^the user enters the mobile number$/, async () => {
         console.log("Mobile number field found!");
 
         await mobileInput.clearValue();
-        await mobileInput.setValue("8660320147");
+        await mobileInput.setValue("9526353542");
 
         console.log("Mobile number entered successfully!");
     } else {
@@ -51,10 +51,10 @@ Then(/^the user enters the OTP$/, async () => {
     await enterOtp.waitForExist({ timeout: 10000 });
    if (await enterOtp.isExisting()) {
         // await enterOtp.clearValue();
-        await enterOtp.setValue("4");
-        await enterOtp1.setValue("2");
-        await enterOtp2.setValue("2");
-        await enterOtp3.setValue("1");
+        await enterOtp.setValue("3");
+        await enterOtp1.setValue("5");
+        await enterOtp2.setValue("4");
+        await enterOtp3.setValue("2");
         console.log("OTP entered successfully!");
     } else {
         console.log("OTP field not found!");
@@ -62,38 +62,60 @@ Then(/^the user enters the OTP$/, async () => {
 
     await driver.pause(5000); 
 });
+Then(/^the user clicks on ok to close the default phone app pop up$/, async () => {
+    try {
+        const okButton = await driver.$('android=new UiSelector().resourceId("android:id/button1")');
+        
+        // Wait for the OK button to exist within a timeout of 5 seconds
+        await okButton.waitForExist({ timeout: 5000 });
+        
+        if (await okButton.isDisplayed()) {
+            console.log("OK button found!");
+            await okButton.click();
+            console.log("OK button clicked successfully!");
+        } else {
+            console.log("OK button is not displayed.");
+        }
+    } catch (error) {
+        console.log("Pop-up did not appear or another error occurred: ", error.message);
+    }
+    
+    // Proceed with the regular flow even if the pop-up doesn't appear
+    console.log("Continuing with the rest of the test...");
+    await driver.pause(3000); // Pause to observe the result
+});
 Given(/^I am on the Hotline dashboard$/, async () => {
     const text=await driver.$('id=com.vahan.hotline:id/tvGreetUser');
     if (await text.isExisting()) {
         const text1 = await text.getText();
         console.log(`📌 Found text: "${text1}"`);
 
-        if (text1.includes("Hello aishwarya")) {
+        if (text1.includes("Hello Arjun")) {
             console.log("✅ Expected text is present!");
         } else {
-            throw new Error(`❌ Expected 'Hello aishwarya' but found '${text1}'`);
+            throw new Error(`❌ Expected 'Hello Arjun' but found '${text1}'`);
         }
     } else {
         throw new Error("❌ Element not found!");
     }
     await driver.pause(5000);
 });
-When(/^The user punch in$/, async () => {
-    console.log("🔄 Searching for Punch In button...");
+// When(/^The user punch in$/, async () => {
+//     console.log("🔄 Searching for Punch In button...");
 
-    const punchInButton = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/btnPunchIn")');
+//     const punchInButton = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/btnPunchIn")');
 
-    await punchInButton.waitForExist({ timeout: 5000 });
+//     await punchInButton.waitForExist({ timeout: 5000 });
 
-    if (await punchInButton.isDisplayed()) {
-        console.log("✅ Punch In button found!");
-        await punchInButton.click();
-        console.log("✅ Successfully Punched in!");
-    } else {
-        throw new Error("❌ Punch In button not found!");
-    }
-    await driver.pause(5000);
-});
+//     if (await punchInButton.isDisplayed()) {
+//         console.log("✅ Punch In button found!");
+//         await punchInButton.click();
+//         console.log("✅ Successfully Punched in!");
+//     } else {
+//         throw new Error("❌ Punch In button not found!");
+//     }
+//     await driver.pause(5000);
+// });
 When(/^The user navigates to Campaigns$/, async () =>{
     console.log("Searching for Campaigns tab...");
     const Campaigns = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/navigation_campaign")');
