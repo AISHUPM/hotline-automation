@@ -3,8 +3,9 @@ Scenario: Smart List Flow
    Given the user enters the mobile number
    When the user clicks on the Request OTP button
    Then the user enters the OTP
+   Then the user clicks on ok to close the default phone app pop up
    Given I am on the Hotline dashboard
-   When The user punch in
+   # When The user punch in
    When The user navigates to Campaigns
    When User is entering the Campaigns
    Then User opens the Smartlist Campaign

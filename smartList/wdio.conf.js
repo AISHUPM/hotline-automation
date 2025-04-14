@@ -31,8 +31,8 @@ exports.config = {
     reporters: [
         'spec',
         ['allure', {
-            outputDir: './allure-results',
-            disableWebdriverStepsReporting: false,
+            outputDir: 'allure-results/smartList',
+            disableWebdriverStepsReporting: true,
             disableWebdriverScreenshotsReporting: false
         }]
     ],
