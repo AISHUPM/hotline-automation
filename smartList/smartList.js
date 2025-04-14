@@ -100,22 +100,22 @@ Given(/^I am on the Hotline dashboard$/, async () => {
     }
     await driver.pause(5000);
 });
-// When(/^The user punch in$/, async () => {
-//     console.log("🔄 Searching for Punch In button...");
+When(/^The user punch in$/, async () => {
+    console.log("🔄 Searching for Punch In button...");
 
-//     const punchInButton = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/btnPunchIn")');
+    const punchInButton = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/btnPunchIn")');
 
-//     await punchInButton.waitForExist({ timeout: 5000 });
+    await punchInButton.waitForExist({ timeout: 5000 });
 
-//     if (await punchInButton.isDisplayed()) {
-//         console.log("✅ Punch In button found!");
-//         await punchInButton.click();
-//         console.log("✅ Successfully Punched in!");
-//     } else {
-//         throw new Error("❌ Punch In button not found!");
-//     }
-//     await driver.pause(5000);
-// });
+    if (await punchInButton.isDisplayed()) {
+        console.log("✅ Punch In button found!");
+        await punchInButton.click();
+        console.log("✅ Successfully Punched in!");
+    } else {
+        throw new Error("❌ Punch In button not found!");
+    }
+    await driver.pause(5000);
+});
 When(/^The user navigates to Campaigns$/, async () =>{
     console.log("Searching for Campaigns tab...");
     const Campaigns = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/navigation_campaign")');
