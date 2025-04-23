@@ -10,7 +10,7 @@ Given(/^the user enters the mobile number$/, async () => {
         console.log("Mobile number field found!");
 
         await mobileInput.clearValue();
-        await mobileInput.setValue("9526353542");
+        await mobileInput.setValue("8660320147");
 
         console.log("Mobile number entered successfully!");
     } else {
@@ -51,10 +51,10 @@ Then(/^the user enters the OTP$/, async () => {
     await enterOtp.waitForExist({ timeout: 10000 });
    if (await enterOtp.isExisting()) {
         // await enterOtp.clearValue();
-        await enterOtp.setValue("3");
-        await enterOtp1.setValue("5");
-        await enterOtp2.setValue("4");
-        await enterOtp3.setValue("2");
+        await enterOtp.setValue("4");
+        await enterOtp1.setValue("2");
+        await enterOtp2.setValue("2");
+        await enterOtp3.setValue("1");
         console.log("OTP entered successfully!");
     } else {
         console.log("OTP field not found!");
@@ -82,7 +82,7 @@ Then(/^the user clicks on ok to close the default phone app pop up$/, async () =
     
     // Proceed with the regular flow even if the pop-up doesn't appear
     console.log("Continuing with the rest of the test...");
-    await driver.pause(3000); // Pause to observe the result
+    await driver.pause(6000); // Pause to observe the result
 });
 Given(/^I am on the Hotline dashboard$/, async () => {
     const text=await driver.$('id=com.vahan.hotline:id/tvGreetUser');
@@ -90,10 +90,10 @@ Given(/^I am on the Hotline dashboard$/, async () => {
         const text1 = await text.getText();
         console.log(`📌 Found text: "${text1}"`);
 
-        if (text1.includes("Hello Arjun")) {
+        if (text1.includes("Hello aishwarya")) {
             console.log("✅ Expected text is present!");
         } else {
-            throw new Error(`❌ Expected 'Hello Arjun' but found '${text1}'`);
+            throw new Error(`❌ Expected 'Hello aishwarya' but found '${text1}'`);
         }
     } else {
         throw new Error("❌ Element not found!");
@@ -133,14 +133,13 @@ When(/^User is entering the Campaigns$/, async () =>{
     console.log("Let's get started");
     const getStarted = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/btnGetStarted")');
     await getStarted.waitForExist({ timeout: 5000 });
-    if (await getStarted.isDisplayed()) {
-        console.log("✅ Let's start button found!");
-        await getStarted.click();
-    //     console.log("✅ Successfully entered the Campaigns!");
-    // } else {
-    //     throw new Error("❌ Campaigns not found!");
-    }
-    await driver.pause(2000);
+        if (await getStarted.isDisplayed()) {
+            console.log("✅ Let's start button found!");
+            await getStarted.click();
+        } else {
+            throw new Error("❌ Campaigns not found!");
+        }
+        await driver.pause(2000);
     });
 Then(/^User opens the Smartlist Campaign$/, async () => {
     console.log("First Trip SmartList");
@@ -194,49 +193,72 @@ Then(/^the user clicks on Start Auto Dialing if leads exist$/, async () => {
     } else {
         console.log('No leads available for auto dialing.');
     }
-    await driver.pause(3000);
+    await driver.pause(5000);
 });   
 Then(/^User checks if the previous calls pop-up appears$/, async () => {
     try {
-        console.log("Checking if the popup appears...");
+        console.log("🔍 Checking if the previous call popup appears...");
 
-        // Define the locator for the popup
-        const popupSelector = 'com.vahan.hotline:id/afterCallNoteCardView';
+        // Define the selector for the popup
+        const popupSelector = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/afterCallNoteCardView")');
+        const popupExists = await popupSelector.isExisting();
 
-        // Try to find the popup with a timeout of 3 seconds
-        const popupElement = await driver.$(`android.widget.FrameLayout[id="${popupSelector}"]`);
+        if (popupExists) {
+            const connectedCallback = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/chip_connected_callback")');
+            await connectedCallback.click();
+            console.log("✅ Call note selected as 'Connected'");
 
-        if (await popupElement.isExisting()) {
-            console.log("Popup appeared. Handling it...");
-            await popupElement.click(); // Adjust handling as needed (dismiss, enter text, etc.)
+            await driver.pause(3000);
+
+            // Save the call note
+            const saveButtonOne = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnSaveAfterCallNote")');
+            if (await saveButtonOne.isDisplayed()) {
+                await saveButtonOne.click();
+                console.log("💾 Call note saved");
+            } else {
+                console.log("⚠️ Save button not found!");
+            }
         } else {
-            console.log("Popup did not appear. Continuing with the next steps...");
+            console.log("❌ Popup did not appear.");
         }
 
-        // Continue with the rest of the test script
-        console.log("Executing next steps...");
+        // Start Auto Dialing regardless of popup
+        console.log("➡️ Attempting to start Auto Dialing...");
+
+        const startButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnAutoDial")');
+        await startButton.waitForDisplayed({ timeout: 10000 });
+        await startButton.click();
+
+        console.log("📞 Start Auto Dialing clicked!");
+
+        // Optional wait for next steps
+        await driver.pause(5000);
+        console.log("🚀 Moving to next test steps...");
+        await driver.pause(10000);
 
     } catch (error) {
-        console.error("Error occurred:", error);
-    } 
-    await driver.pause(10000);
+        console.error("❗ Error occurred in popup check step:", error);
+    }
+    await driver.pause(2000);
 });
+
 Then(/^the user ends the call$/, async () => {
     const endCallButton= await $('android=new UiSelector().resourceId("com.google.android.dialer:id/incall_end_call")');
     await endCallButton.click();
         console.log("Call ended");
         // Wait for the call note pop-up
-        await driver.pause(3000);
+        await driver.pause(2000);
 });
 When(/^The Call note pop up appears$/, async () => {
     await driver.pause(3000); // Wait for the pop-up to appear
-    const callNote = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/chip_connected_callback")');
+    const callNote = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/chip_connected_interested")');
     if (await callNote.isDisplayed()) {
         await callNote.click();
         console.log("Call note selected");
     } else {
         console.log("Call note pop-up did not appear");
     }
+    await driver.pause(2000);
 });
 When(/^The user saves the call note$/, async () => {
     const saveButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnSaveAfterCallNote")');
@@ -741,6 +763,168 @@ Then(/^User navigates back to Home Page$/, async () =>{
     }
     await driver.pause(3000);
 });
+//Non-referred Candidates
+When(/^User navigates to Non-referred Candidates$/, async () =>{
+    const nonReferred = await driver.$('android=new UiSelector().className("android.view.ViewGroup").instance(3)');
+
+        // Wait for the element to exist
+        await nonReferred.waitForExist({ timeout: 5000 });
+
+        // Check if the element is displayed before clicking
+        if (await nonReferred.isDisplayed()) {
+            console.log("✅ Non-Referred campaign entry is visible. Clicking now...");
+            await nonReferred.click();
+        } else {
+            console.log("❌ RNR campaign entry is not visible.");
+        }
+    await driver.pause(5000);
+});
+Then(/^Let's start Non-referred Campaign$/, async () => {
+    const letsStartBtn= await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/btnLetsStartDialing")');
+    await letsStartBtn.waitForExist({ timeout: 5000 });
+    if(await letsStartBtn.isDisplayed()) {
+        console.log("✅ Let's start button found!");
+        await letsStartBtn.click();
+    }
+    await driver.pause(2000);
+});
+Then(/^The user verifies the pending section in non-Referred Campaign$/, async () => {
+    const pendingNr = await $('android=new UiSelector().text("Pending")');
+    await pendingNr.waitForExist({ timeout: 10000 });
+    await expect(pendingNr).toBeDisplayed();
+    console.log("Pending section verified successfully!");
+    await driver.pause(2000);
+});
+let previousLeadNum = null; // Global variable to store the fetched number
+When(/^Capturing the first lead number in non-referred$/, async () => {
+    try {
+        const riderNumberElement = await driver.$("id=com.vahan.hotline:id/tvLeadNumber");
+        const riderNumberText = await riderNumberElement.getText();
+        global.previousLeadNum = riderNumberText.match(/\d+/)?.[0] || riderNumberText; // Store extracted number globally
+        console.log("📌 First captured lead number:", global.previousLeadNum);
+    } catch (error) {
+        console.error("❌ Error fetching number:", error);
+    } 
+    await driver.pause(3000);
+});
+Then(/^the user clicks on Start Auto Dialing in Non referred campaign if leads exist$/, async () => {
+    const pendingCt= await $('android=new UiSelector().resourceId("com.vahan.hotline:id/tvTabCount")');
+    const pendingCtText = await pendingCt.getText();
+    const pendingriders = parseInt(pendingCtText);
+
+    if (pendingriders > 0) {
+        const startDialingButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnAutoDial")');
+        await expect(startDialingButton).toBeDisplayed();
+        await startDialingButton.click();
+        console.log("Start Auto Dialing clicked!");
+    } else {
+        console.log('No leads available for auto dialing.');
+    }
+    await driver.pause(3000);
+});
+    Then(/^the user ends the call in NRC$/, async () => {
+        const endCallButton= await $('android=new UiSelector().resourceId("com.google.android.dialer:id/incall_end_call")');
+        await endCallButton.click();
+            console.log("Call ended");
+            // Wait for the call note pop-up
+            await driver.pause(3000);
+    });
+    When(/^The Call note pop up appears in NRC$/, async () => {
+        await driver.pause(3000); // Wait for the pop-up to appear
+        const callNote = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/chip_connected_callback")');
+        if (await callNote.isDisplayed()) {
+            await callNote.click();
+            console.log("Call note selected");
+        } else {
+            console.log("Call note pop-up did not appear");
+        }
+    });
+    When(/^The user saves the call note in NRC$/, async () => {
+        const saveButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnSaveAfterCallNote")');
+        if (await saveButton.isDisplayed()) {
+            await saveButton.click();
+            console.log("Call note saved");
+        } else {
+            console.log("Save button not found!");
+        }
+        // Wait for the action to complete
+        await driver.pause(5000);
+    });
+    Then(/^Verify if the previously stored number is present in NRC$/, async () => {
+        try {
+            console.log("🔎 Checking if the stored lead number is still present...");
+    
+            const mainScreenElement = await driver.$("id=com.vahan.hotline:id/mainContent");
+            if (!(await mainScreenElement.isExisting())) {
+                console.log("❌ Main content screen is NOT displayed.");
+                return;
+            }
+    
+            const newLeadNumberElement = await driver.$("id=com.vahan.hotline:id/tvLeadNumber");
+            const newLeadNumberText = await newLeadNumberElement.getText();
+            const currentLeadNumber = newLeadNumberText.match(/\d+/)?.[0] || newLeadNumberText;
+    
+            console.log("🔹 Previously stored lead number:", global.previousLeadNumber);
+            console.log("🔹 Current lead number on screen:", currentLeadNumber);
+    
+            if (global.previousLeadNumber === currentLeadNumber) {
+                console.log("✅ The stored lead number is still present.");
+            } else {
+                console.log("❌ The lead number has changed.");
+            }
+    
+            // ✅ Store the new lead number for next check
+            global.previousLeadNumber = currentLeadNumber;
+            console.log("📌 Updated stored lead number for next check:", global.previousLeadNumber);
+    
+        } catch (error) {
+            console.error("❌ Error verifying the lead number:", error);
+        }
+        await driver.pause(2000);
+    });
+    
+    Then(/^The user ends the second call in NRC$/, async () => {
+        const endCall= await $('android=new UiSelector().resourceId("com.google.android.dialer:id/incall_end_call")');
+        await endCall.click();
+            console.log("Call ended");
+            // Wait for the call note pop-up
+            await driver.pause(3000);
+    });
+    When(/^The new Call note pop up appears in NRC$/, async () => {
+        await driver.pause(3000); // Wait for the pop-up to appear
+        const newcallNote = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/chip_not_connected_not_received")');
+        if (await newcallNote.isDisplayed()) {
+            await newcallNote.click();
+            console.log("Call note selected as 'Not Connected' ");
+        } else {
+            console.log("Call note pop-up did not appear");
+        }
+        await driver.pause(5000);
+    });
+    When(/^The user saves the new call note in NRC$/, async () => {
+        const save = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnSaveAfterCallNote")');
+        if (await save.isDisplayed()) {
+            await save.click();
+            console.log("Call note saved");
+        } else {
+            console.log("Save button not found!");
+        }
+        // Wait for the action to complete
+        await driver.pause(5000);
+    });
+    Then(/^User pauses the Autodialler in NRC$/, async () => {
+        const pauseButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnAutoDial")');
+        if (await pauseButton.isDisplayed()) {
+            await pauseButton.click();
+            console.log("Auto-dialer paused");
+        } else {
+            console.log("Auto-dialer button not found!");
+        }
+    // Wait for the action to complete
+        await driver.pause(3000);
+    });
+
+
 
 
 

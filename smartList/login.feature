@@ -13,7 +13,7 @@ Scenario: Smart List Flow
    Then the user verifies the pending section
    When Capturing the first lead name
    Then the user clicks on Start Auto Dialing if leads exist
-   Then User checks if the previous calls pop-up appears
+   # Then User checks if the previous calls pop-up appears
    Then the user ends the call
    When The Call note pop up appears
    When The user saves the call note
@@ -48,3 +48,18 @@ Scenario: Smart List Flow
    Then Fetch all phone numbers and verify the previous 2 stored numbers in RNR
    Then User navigates back to RNR welcome page
    Then User navigates back to Home Page
+   # Non-referred Campaign
+   When User navigates to Non-referred Candidates
+   Then Let's start Non-referred Campaign
+   Then The user verifies the pending section in non-Referred Campaign
+   When Capturing the first lead number in non-referred
+   Then the user clicks on Start Auto Dialing in Non referred campaign if leads exist
+   Then the user ends the call in NRC
+   When The Call note pop up appears in NRC
+   When The user saves the call note in NRC
+   Then Verify if the previously stored number is present in NRC
+   Then The user ends the second call in NRC
+   When The new Call note pop up appears in NRC
+   When The user saves the new call note in NRC
+   Then User pauses the Autodialler in NRC
+  
