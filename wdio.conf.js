@@ -28,14 +28,11 @@ exports.config = {
         timeout: 60000
     },
 
-    reporters: [
-        'spec',
-        ['allure', {
-            outputDir: 'allure-results/smartList',
-            disableWebdriverStepsReporting: true,
-            disableWebdriverScreenshotsReporting: false
-        }]
-    ],
+    reporters: ['spec', ['allure', {
+        outputDir: 'allure-results',
+        disableWebdriverStepsReporting: true,
+        disableWebdriverScreenshotsReporting: false,
+      }]],
 
     services: [['appium', { command: 'appium' }]],
     beforeSession: function (config, capabilities, specs) {
