@@ -5,6 +5,7 @@ Scenario: Smart List Flow
 
    # Given the user enters 6 digit number and requests for OTP
    # Given User clears the input field
+   
    Given Verify the field by entering valid number and request for OTP
    # Then Verify by entering wrong OTP
    # Then User clears the OTP field
@@ -42,18 +43,21 @@ Scenario: Smart List Flow
    When Verify the save button
    Then Verify if the previously stored number is present in the pending section
    Then Verify when the user ends the second call without having it connected
-   When Verify that the call note pop-up appears for previous call
+   When Verify that the call note pop-up appears for second call
    When Verify by saving the call note for not connected call
    Then Verify by pausing the autodialler
    Then Verify by going back to main screen
    Then Verify opening the called section
-   Then Verify opening the lead card
+   Then Verify if the latest called lead appears in the called section
    Then Verify the call notes are present for the called leads
-   Then Verify going back to the main screen of Firt Trip smart list
+   Then Verify going back to the main screen of First Trip smart list
+   Then Verify navigating back to pending section
    Then Verify opening lead card
    Then Verify manual calling from lead profile
    Then Verify by ending the profile call after it is connected
    When Verify that the call note pop up appears after the call ends and save it
+   Then Verify navigating back to the pending section of SL
+   Then Verify opening fresh lead card from the pending list
    Then Verify adding custom call note from a referred lead profile
    Then Verify selecting the 'call back' status under connected section
    Then Verify selecting the client from the dropdown
@@ -62,13 +66,6 @@ Scenario: Smart List Flow
    Then Verify saving the call note
    Then Verify that the call note is saved by verifying the time mentioned in the saved call note
 
-
-   Then Verify by going back to main screen
-   Then Verify opening the called section
-   Then Verify the call notes are present for the called leads
-   Then Verify going back to the main screen of Firt Trip smart list
-   Then Verify opening lead card
-   Then Verify manual calling from lead profile
 
 
    # When The user navigates to Campaigns

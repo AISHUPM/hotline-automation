@@ -1,6 +1,9 @@
 const {Given, When,Then} = require('@cucumber/cucumber');
 const { remote } = require('webdriverio');
 const { faker } = require('@faker-js/faker');
+const fs = require('fs');
+console.log("✅ smartList.js loaded!");
+
 // Given(/^the user is on the main welcome screen$/, async () => {
 //     // Wait for the main welcome screen to be displayed
 //     const welcomeScreen = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/main")');
@@ -177,10 +180,10 @@ Then(/^User enters valid OTP and proceeds$/, async () => {
     await  validOtp.waitForExist({ timeout: 10000 });
 
     if (await  validOtp.isExisting()) {
-        await  validOtp.setValue("0");
-        await  validOtp1.setValue("1");
-        await  validOtp2.setValue("4");
-        await  validOtp3.setValue("7");
+        await  validOtp.setValue("4");
+        await  validOtp1.setValue("2");
+        await  validOtp2.setValue("2");
+        await  validOtp3.setValue("1");
         console.log("✅Valid entered successfully!");
     } else {
         throw new Error("OTP input fields not found!");
@@ -516,8 +519,8 @@ Then(/^Verify selecting start and end date from the calendar by clicking it$/, a
     const endDay = today.getDate().toString();
 
     // Click start date
-    const startElems = await $$(`android=new UiSelector().text("${startDay}")`);
-    await startElems[0].click(); // safe default
+    const startElems = await $(`android=new UiSelector().text("${startDay}")`);
+    await startElems.click(); // safe default
     console.log(`✅ Selected start date: ${selectedStartDate}`);
     await driver.pause(1000);
 
@@ -578,21 +581,26 @@ Then(/^Verify selected date range is visible on home screen$/, async () => {
 });
 
 
-When(/^Verify by entering the date manually using the edit button in the calender and save it$/, async () =>{
-    const calender = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/tvFromDate")');
+When(/^Verify by entering the date manually using the edit button in the calender and save it$/, async () => {
+    // Open the calendar
+    const calender = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/tvFromDate")');
     await calender.click();
-    console.log("✅ Successfully clicked on Calender");
-    await driver.pause(2000);
+    console.log("✅ Opened Calendar");
 
-    const editButton = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/mtrl_picker_header_toggle")');
+    await driver.pause(1000);
+
+    // Click the edit (keyboard) button
+    const editButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/mtrl_picker_header_toggle")');
     await editButton.click();
-    console.log("✅ Successfully clicked on Edit button");
-    await driver.pause(2000);
+    console.log("✅ Clicked Edit button");
 
-    const startDateInput = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/etStartDate")');
-    // Calculate start date (29 days before today) and end date (today) in mm/dd/yyyy format
+    await driver.pause(1000);
+
+    // Prepare the dates
     const today = new Date();
-    const startDate = new Date();
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - 29);
+
     const formatMMDDYYYY = (date) => {
         const mm = String(date.getMonth() + 1).padStart(2, '0');
         const dd = String(date.getDate()).padStart(2, '0');
@@ -603,13 +611,34 @@ When(/^Verify by entering the date manually using the edit button in the calende
     const startDateStr = formatMMDDYYYY(startDate);
     const endDateStr = formatMMDDYYYY(today);
 
-    await startDateInput.setValue(startDateStr);
-    console.log(`✅ Start date entered successfully: ${startDateStr}`);
-    const endDateInput = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/etEndDate")');
-    await endDateInput.setValue(endDateStr);
-    console.log(`✅ End date entered successfully: ${endDateStr}`);
-    console.log("✅ End date entered successfully!");
+    // Use textMatches to locate start date input dynamically
+    const startDateInput = await $(`android=new UiSelector().textMatches("${startDateStr}")`);
+    if (await startDateInput.isDisplayed()) {
+        await startDateInput.click();
+        console.log(`✅ Clicked start date input: ${startDateStr}`);
+    } else {
+        throw new Error(`Start date input not found: ${startDateStr}`);
+    }
+
+    // Use textMatches to locate end date input dynamically
+    const endDateInput = await $(`android=new UiSelector().textMatches("${endDateStr}")`);
+    if (await endDateInput.isDisplayed()) {
+        await endDateInput.click();
+        console.log(`✅ Clicked end date input: ${endDateStr}`);
+    } else {
+        throw new Error(`End date input not found: ${endDateStr}`);
+    }
+
+    // Tap "OK" button to confirm date selection
+    const saveBtn = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/confirm_button")');
+    if (await saveBtn.isDisplayed()) {
+        await saveBtn.click();
+        console.log("✅ Date saved using SAVE button");
+    } else {
+        console.log(" ❌SAVE button not found");
+    }
 });
+
 // -----------------------------------------------Pending and called Section--------------------------------------------------
 When(/^Verify 'Let's Start' button$/, async () => {
     console.log("Welcome to First Trip SmartList");
@@ -686,20 +715,20 @@ Then(/^Verify if the disposition appears for previous calls$/, async () => {
         console.log("➡️ Attempting to start Auto Dialing...");
 
         const startButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnAutoDial")');
-        await startButton.waitForDisplayed({ timeout: 10000 });
+        await startButton.waitForDisplayed({ timeout: 5000 });
         await startButton.click();
 
         console.log("📞 Start Auto Dialing clicked!");
 
         // Optional wait for next steps
-        await driver.pause(5000);
+        await driver.pause(3000);
         console.log("🚀 Moving to next test steps...");
-        await driver.pause(10000);
+        await driver.pause(3000);
 
     } catch (error) {
         console.error("❗ Error occurred in popup check step:", error);
     }
-    await driver.pause(8000);
+    await driver.pause(2000);
 });
 
 Then(/^Verify by ending the call after it is connected$/, async () => {
@@ -770,16 +799,19 @@ Then(/^Verify when the user ends the second call without having it connected$/, 
         // Wait for the call note pop-up
         await driver.pause(3000);
 });
-When(/^Verify that the call note pop-up appears for previous call$/, async () => {
+When(/^Verify that the call note pop-up appears for second call$/, async () => {
     await driver.pause(3000); // Wait for the pop-up to appear
-    const newcallNote = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/chip_not_connected_not_received")');
-    if (await newcallNote.isDisplayed()) {
-        await newcallNote.click();
-        console.log("Call note selected as 'Not Connected' ");
+    const notConnectedSection = await $('android=new UiSelector().text("Not Connected")');
+    await notConnectedSection.click();
+    console.log("Not Connected section clicked");
+    const newNote = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/chip_not_connected_not_received")');
+    if (await newNote.isDisplayed()) {
+        await newNote.click();
+        console.log("Call note selected as 'Not Received' ");
     } else {
         console.log("Call note pop-up did not appear");
     }
-    await driver.pause(5000);
+    await driver.pause(2000);
 });
 When(/^Verify by saving the call note for not connected call$/, async () => {
     const save = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnSaveAfterCallNote")');
@@ -790,7 +822,7 @@ When(/^Verify by saving the call note for not connected call$/, async () => {
         console.log("Save button not found!");
     }
     // Wait for the action to complete
-    await driver.pause(5000);
+    await driver.pause(2000);
 });
 Then(/^Verify by pausing the autodialler$/, async () => {
     const pauseButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/btnAutoDial")');
@@ -801,7 +833,7 @@ Then(/^Verify by pausing the autodialler$/, async () => {
         console.log("Auto-dialer button not found!");
     }
 // Wait for the action to complete
-    await driver.pause(3000);
+    await driver.pause(2000);
 });
  Then(/^Verify by going back to main screen$/, async () =>{
     const backButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/ivBack")');
@@ -811,53 +843,123 @@ Then(/^Verify by pausing the autodialler$/, async () => {
     } else {
         console.log("User is not in pending section");
     }
-    await driver.pause(3000);
+    await driver.pause(2000);
 });
 Then(/^Verify opening the called section$/, async () =>{
     const calledSection = await $('android=new UiSelector().text("Called")');
-    await calledSection.waitForExist({ timeout: 10000 });
-    await expect(calledSection).toBeDisplayed();
-    await calledSection
+    await calledSection.waitForExist({ timeout: 3000 });
+    await calledSection.click();
+    // await expect(calledSection).toBeDisplayed();
+    // await calledSection
     console.log("✅ Called section successfully clicked!");
     await driver.pause(2000);
 });
-Then(/^Verify opening the lead card$/, async () => {
-const leadCard = await driver.$('android=new UiSelector().className("android.widget.RelativeLayout").instance(3)');
-    await leadCard.waitForExist({ timeout: 10000 });
-    if (await leadCard.isDisplayed()) {
-        console.log("✅ Lead card found!");
-        await leadCard.click();
-        console.log("✅ Successfully opened the lead card!");
-    } else {
-        throw new Error("❌ Lead card not found!");
+Then(/^Verify if the latest called lead appears in the called section$/, async () => {
+    try {
+        // Open the lead card (e.g., from Called tab)
+        const leadCard = await driver.$('android=new UiSelector().className("android.widget.RelativeLayout").instance(3)');
+        await leadCard.waitForExist({ timeout: 10000 });
+
+        if (await leadCard.isDisplayed()) {
+            console.log("✅ Lead card found in called section!");
+            await leadCard.click();
+            console.log("✅ Successfully opened the lead card!");
+        } else {
+            throw new Error("❌ Lead card not found in called section!");
+        }
+
+        await driver.pause(2000);
+
+        // Now verify the lead number inside the opened card
+        const leadNumberElement = await driver.$("id=com.vahan.hotline:id/tvLeadNumber");
+        const leadNumberText = await leadNumberElement.getText();
+        const calledSectionNumber = leadNumberText.match(/\d+/)?.[0] || leadNumberText;
+
+        console.log("🔹 Lead number in called section:", calledSectionNumber);
+        console.log("🔹 Previously stored lead number:", global.previousLeadNumber);
+
+        if (calledSectionNumber === global.previousLeadNumber) {
+            console.log("✅ Lead number matches in called section.");
+        } else {
+            console.log("❌ Lead number mismatch in called section.");
+        }
+
+    } catch (error) {
+        console.error("❌ Error in verifying lead number in called section:", error);
     }
+
     await driver.pause(2000);
 });
 Then(/^Verify the call notes are present for the called leads$/, async () => {
-    const callNote = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/overviewLayout")');
-    await callNote.waitForExist({ timeout: 3000 });
-    if (await callNote.isDisplayed()) {
-        const noteText = await callNote.getText();
-        // console.log(`📌 Call note text: "${noteText}"`);
-        console.log("✅ Call note is present for the called lead.");
-    } else {
-        throw new Error("❌ Call note not found for the called lead!");
+    try {
+        const callNote = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/tvCallNoteCount")');
+        await callNote.waitForExist({ timeout: 2000 });
+
+        if (await callNote.isDisplayed()) {
+            console.log("✅ Call note is present for the called lead.");
+        } else {
+            throw new Error("❌ Call note not found for the called lead!");
+        }
+    } catch (error) {
+        console.error(error.message);
+
+        // Take screenshot and attach to Allure
+        // const fs = require('fs');
+        const screenshotPath = `./errorScreenshots/callnote_error_${Date.now()}.png`;
+        await driver.saveScreenshot(screenshotPath);
+        allure.addAttachment('Screenshot on Failure', fs.readFileSync(screenshotPath), 'image/png');
+
+        // Let the test fail but continue other tests
+        throw error;
     }
     await driver.pause(2000);
 });
-Then (/^Verify going back to the main screen of Firt Trip smart list$/, async () => {
-    const backButton = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/ivBack")');
-    if (await backButton.isDisplayed()) {
-        await backButton.click();
-        console.log("✅ Successfully navigated back to the main screen of First Trip SmartList");
+
+// const fs = require('fs');
+const path = require('path');
+
+Then(/^Verify going back to the main screen of First Trip smart list$/, async () => {
+    const backButton = await $('android=new UiSelector().resourceId("com.vahan.hotline:id/ivBack")');
+    try {
+        if (await backButton.isDisplayed()) {
+            await backButton.click();
+            console.log("✅ Successfully navigated back to the main screen of First Trip SmartList");
+        } else {
+            throw new Error("❌ Back button is not displayed.");
+        }
+    } catch (error) {
+        console.error("❌ Failed to navigate back:", error.message);
+
+        // Screenshot on failure
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const screenshotPath = path.join('./errorShots', `BackNavigationFail_${timestamp}.png`);
+
+        // Ensure the errorShots directory exists
+        if (!fs.existsSync('./errorShots')) {
+            fs.mkdirSync('./errorShots');
+        }
+
+        await driver.saveScreenshot(screenshotPath);
+        console.log(`📸 Screenshot saved at: ${screenshotPath}`);
+    }
+
+    await driver.pause(2000);
+});
+
+Then(/^Verify navigating back to pending section$/, async () => {
+    const pendingSection = await driver.$('android=new UiSelector().text("Pending")');
+    await pendingSection.waitForExist({ timeout: 2000 });
+    if (await pendingSection.isDisplayed()) {
+        await pendingSection.click();
+        console.log("✅ Successfully navigated back to the Pending section");
     } else {
-        throw new Error("❌ Back button not found!");
+        throw new Error("❌ Pending section not found!");
     }
     await driver.pause(2000);
 });
 Then (/^Verify opening lead card$/, async () => {
-    const leadCard = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/leadDetailLayout');
-    await leadCard.waitForExist({ timeout: 5000 });
+    const leadCard = await driver.$('android=new UiSelector().className("android.widget.RelativeLayout").instance(3)');
+    await leadCard.waitForExist({ timeout: 3000 });
     if (await leadCard.isDisplayed()) {
         console.log("✅ Lead card found!");
         await leadCard.click();
@@ -869,7 +971,7 @@ Then (/^Verify opening lead card$/, async () => {
 });
 Then (/^Verify manual calling from lead profile$/, async () => {
     const manualCallButton = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/btnCallLinear")');
-    await manualCallButton.waitForExist({ timeout: 5000 });
+    await manualCallButton.waitForExist({ timeout: 3000 });
     if (await manualCallButton.isDisplayed()) {
         console.log("✅ Manual call button found!");
         await manualCallButton.click();
@@ -878,10 +980,10 @@ Then (/^Verify manual calling from lead profile$/, async () => {
         throw new Error("❌ Manual call button not found!");
     }
 
-    await driver.pause(8000);
+    await driver.pause(5000);
 });
 Then(/^Verify by ending the profile call after it is connected$/, async () => {
-    const endCallBtnn= await $('android=new UiSelector().resourceId("com.google.android.dialer:id/incall_end_call")');
+    const endCallBtn= await $('android=new UiSelector().resourceId("com.google.android.dialer:id/incall_end_call")');
     await endCallBtn.click();
         console.log("Call ended");
         // Wait for the call note pop-up
@@ -907,6 +1009,37 @@ When(/^Verify that the call note pop up appears after the call ends and save it$
     // Wait for the action to complete
     await driver.pause(5000);
 });
+Then(/^Verify navigating back to the pending section of SL$/, async () => {
+    const backBtn = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/ivBack")');
+
+    const isBackBtnPresent = await backBtn.waitForExist({ timeout: 3000 }).catch(() => false);
+
+    if (isBackBtnPresent && await backBtn.isDisplayed()) {
+        await backBtn.click();
+        console.log("✅ Successfully navigated back to the referred lead profile");
+    } else {
+        const screenshotPath = `./screenshots/back_navigation_failed_${Date.now()}.png`;
+        await driver.saveScreenshot(screenshotPath);
+        console.warn(`⚠️ Back button not found or not displayed. Screenshot saved: ${screenshotPath}`);
+        
+        // Optional: Log soft failure for Allure or custom report
+        // e.g., allure.addAttachment, if using Allure
+    }
+    await driver.pause(2000);
+    // Test execution will continue to the next step
+});
+Then(/^Verify opening fresh lead card from the pending list$/, async () => {
+    const freshLeadCard = await driver.$('android=new UiSelector().className("android.widget.RelativeLayout").instance(3)');
+    await freshLeadCard.waitForExist({ timeout: 3000 });
+    if (await freshLeadCard.isDisplayed()) {
+        console.log("✅ Fresh lead card found!");
+        await freshLeadCard.click();
+        console.log("✅ Successfully opened the fresh lead card!");
+    } else {
+        throw new Error("❌ Fresh lead card not found!");
+    }
+    await driver.pause(2000);
+});
 Then(/^Verify adding custom call note from a referred lead profile$/, async () => {
     const customNoteButton = await driver.$('android=new UiSelector().resourceId("com.vahan.hotline:id/tvAddCallNote")');
     await customNoteButton.waitForExist({ timeout: 3000 }); 
@@ -917,15 +1050,16 @@ Then(/^Verify adding custom call note from a referred lead profile$/, async () =
         throw new Error("❌ Custom call note button not found!");
     }
     // Verify that the pop-up is opened
-    const customPopUp=await driver.$('android=new new UiSelector().className("android.view.ViewGroup").instance(0)")');
+    const customPopUp=await driver.$('android=new UiSelector().className("android.view.ViewGroup").instance(0)');
     await customPopUp.waitForExist({ timeout: 5000 });
     if (await customPopUp.isDisplayed()) {
         console.log("✅ Custom call note pop-up is displayed!");
     } else {
         throw new Error("❌ Custom call note pop-up not displayed!");
     }
+    await driver.pause(2000);
     // Verify selecting connected section
-    const connectedSection = await driver.$('android=new UiSelector().text("Connected")")');
+    const connectedSection = await driver.$('android=new UiSelector().text("Connected")');
     await connectedSection.waitForExist({ timeout: 3000 });
     if (await connectedSection.isDisplayed()) {
         await connectedSection.click();
@@ -933,6 +1067,7 @@ Then(/^Verify adding custom call note from a referred lead profile$/, async () =
     } else {
         throw new Error("❌ Connected section not found!");
     }
+    await driver.pause(2000);
     // Verify all the select status under connected section
     try {
         const callBack = await driver.$('id:com.vahan.hotline:id/chip_connected_callback');

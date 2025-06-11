@@ -12,7 +12,7 @@
   "description": "",
   "devDependencies": {
     "@cucumber/cucumber": "^10.9.0",
-    "@wdio/allure-reporter": "^9.11.0",
+    "@wdio/allure-reporter": "^9.15.0",
     "@wdio/appium-service": "^9.8.0",
     "@wdio/cli": "^9.8.0",
     "@wdio/cucumber-framework": "^9.9.0",
@@ -25,7 +25,7 @@
     "@faker-js/faker": "^9.6.0",
     "@slack/web-api": "^7.9.0",
     "axios": "^1.8.4",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "form-data": "^4.0.2",
     "nodemailer": "^6.10.0"
   }

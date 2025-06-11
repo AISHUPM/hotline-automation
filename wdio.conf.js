@@ -27,7 +27,6 @@ exports.config = {
         require: ['./smartList/**/*.js'],
         timeout: 60000
     },
-
     reporters: ['spec', ['allure', {
         outputDir: 'allure-results',
         disableWebdriverStepsReporting: true,
